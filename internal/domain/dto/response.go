@@ -1,0 +1,11 @@
+package dto
+
+import "errors"
+
+var (
+	Err_INTERNAL_FAILED_BUILD_QUERY = errors.New("failed to build query")
+	Err_INTERNAL_FAILED_SCAN_USER   = errors.New("failed to scan user")
+	Err_INTERNAL_FAILED_INSERT_USER  = errors.New("failed to scan user")
+
+	Err_NOTFOUND_USER_NOT_FOUND = errors.New("user not found")
+)
