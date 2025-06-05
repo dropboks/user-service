@@ -10,6 +10,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type (
@@ -39,12 +41,12 @@ func (a *authRepository) CreateNewUser(user *entity.User) error {
 		ToSql()
 	if err != nil {
 		a.logger.Error().Err(err).Msg("failed to build insert query")
-		return dto.Err_INTERNAL_FAILED_BUILD_QUERY
+		return status.Error(codes.Internal, dto.Err_INTERNAL_FAILED_BUILD_QUERY.Error())
 	}
 	row := a.pgx.QueryRow(context.Background(), query, args...)
 	if err := row.Scan(&user.ID); err != nil {
 		a.logger.Error().Err(err).Msg("failed to insert user")
-		return dto.Err_INTERNAL_FAILED_INSERT_USER
+		return status.Error(codes.Internal, dto.Err_INTERNAL_FAILED_INSERT_USER.Error())
 	}
 	return nil
 }
@@ -58,7 +60,7 @@ func (a *authRepository) QueryUserByEmail(email string) (entity.User, error) {
 		ToSql()
 	if err != nil {
 		a.logger.Error().Err(err).Msg("failed to build query")
-		return user, dto.Err_INTERNAL_FAILED_BUILD_QUERY
+		return user, status.Error(codes.Internal, dto.Err_INTERNAL_FAILED_BUILD_QUERY.Error())
 	}
 
 	row := a.pgx.QueryRow(context.Background(), query, args...)
@@ -66,10 +68,10 @@ func (a *authRepository) QueryUserByEmail(email string) (entity.User, error) {
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			a.logger.Warn().Str("email", email).Msg("user not found")
-			return user, dto.Err_NOTFOUND_USER_NOT_FOUND
+			return user, status.Error(codes.NotFound, dto.Err_NOTFOUND_USER_NOT_FOUND.Error())
 		}
 		a.logger.Error().Err(err).Msg("failed to scan user")
-		return user, dto.Err_INTERNAL_FAILED_SCAN_USER
+		return user, status.Error(codes.Internal, dto.Err_INTERNAL_FAILED_SCAN_USER.Error())
 	}
 	return user, nil
 }
