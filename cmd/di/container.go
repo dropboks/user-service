@@ -4,6 +4,7 @@ import (
 	"github.com/dropboks/user-service/config/database"
 	"github.com/dropboks/user-service/config/logger"
 	"github.com/dropboks/user-service/config/router"
+	"github.com/dropboks/user-service/internal/domain/handler"
 	"github.com/dropboks/user-service/internal/domain/repository"
 	"github.com/dropboks/user-service/internal/domain/service"
 	"go.uber.org/dig"
@@ -17,11 +18,17 @@ func BuildContainer() *dig.Container {
 	if err := container.Provide(database.New); err != nil {
 		panic("Failed to provide database: " + err.Error())
 	}
-	if err := container.Provide(repository.NewAuthRepository); err != nil {
+	if err := container.Provide(repository.NewUserRepository); err != nil {
 		panic("Failed to provide authRepository: " + err.Error())
 	}
 	if err := container.Provide(service.NewAuthService); err != nil {
 		panic("Failed to provide auth service: " + err.Error())
+	}
+	if err := container.Provide(service.NewUserService); err != nil {
+		panic("Failed to provide user service: " + err.Error())
+	}
+	if err := container.Provide(handler.NewUserHandler); err != nil {
+		panic("Failed to provide user handler: " + err.Error())
 	}
 	if err := container.Provide(router.NewHTTP); err != nil {
 		panic("Failed to provide HTTP Server: " + err.Error())
