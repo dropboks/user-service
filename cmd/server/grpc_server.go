@@ -1,11 +1,9 @@
 package server
 
 import (
+	"context"
 	"log"
 	"net"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/dropboks/user-service/internal/domain/handler"
 	"github.com/dropboks/user-service/internal/domain/service"
@@ -21,7 +19,7 @@ type GRPCServer struct {
 	Address     string
 }
 
-func (s *GRPCServer) Run() {
+func (s *GRPCServer) Run(ctx context.Context) {
 	err := s.Container.Invoke(func(
 		grpcServer *grpc.Server,
 		logger zerolog.Logger,
@@ -45,9 +43,7 @@ func (s *GRPCServer) Run() {
 			s.ServerReady <- true
 		}
 
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		<-quit
+		<-ctx.Done()
 		logger.Info().Msg("Shutting down gRPC server...")
 		grpcServer.GracefulStop()
 		logger.Info().Msg("gRPC server stopped gracefully.")
