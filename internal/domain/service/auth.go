@@ -13,20 +13,20 @@ type (
 		GetUserByEmail(*upb.Email) (*upb.User, error)
 	}
 	authService struct {
-		authRepository repository.AuthRepository
+		userRepository repository.UserRepository
 		logger         zerolog.Logger
 	}
 )
 
-func NewAuthService(authRepository repository.AuthRepository, logger zerolog.Logger) AuthService {
+func NewAuthService(userRepository repository.UserRepository, logger zerolog.Logger) AuthService {
 	return &authService{
-		authRepository: authRepository,
+		userRepository: userRepository,
 		logger:         logger,
 	}
 }
 
 func (a *authService) GetUserByEmail(email *upb.Email) (*upb.User, error) {
-	user, err := a.authRepository.QueryUserByEmail(email.GetEmail())
+	user, err := a.userRepository.QueryUserByEmail(email.GetEmail())
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (a *authService) CreateUser(user *upb.User) (*upb.Status, error) {
 		Email:    user.GetEmail(),
 		Password: user.GetPassword(),
 	}
-	err := a.authRepository.CreateNewUser(u)
+	err := a.userRepository.CreateNewUser(u)
 	if err != nil {
 		return nil, err
 	}
