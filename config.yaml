@@ -4,11 +4,12 @@ database:
   password: "password"
   port: "5432"
   name: "dropboks"
-  sslmode: false
+  sslmode: "disable"
 
 app:
   name: "dropboks"
-  port: 50051
+  grpc:
+    port: 50051
 
 server:
   cors:
