@@ -16,7 +16,7 @@ import (
 
 type (
 	AuthRepository interface {
-		QueryUserByEmail(string) (entity.User, error)
+		QueryUserByEmail(string) (*entity.User, error)
 		CreateNewUser(*entity.User) error
 	}
 	authRepository struct {
@@ -51,7 +51,7 @@ func (a *authRepository) CreateNewUser(user *entity.User) error {
 	return nil
 }
 
-func (a *authRepository) QueryUserByEmail(email string) (entity.User, error) {
+func (a *authRepository) QueryUserByEmail(email string) (*entity.User, error) {
 	var user entity.User
 	query, args, err := sq.Select("id", "full_name", "image", "email", "password").
 		From("users").
@@ -60,7 +60,7 @@ func (a *authRepository) QueryUserByEmail(email string) (entity.User, error) {
 		ToSql()
 	if err != nil {
 		a.logger.Error().Err(err).Msg("failed to build query")
-		return user, status.Error(codes.Internal, dto.Err_INTERNAL_FAILED_BUILD_QUERY.Error())
+		return nil, status.Error(codes.Internal, dto.Err_INTERNAL_FAILED_BUILD_QUERY.Error())
 	}
 
 	row := a.pgx.QueryRow(context.Background(), query, args...)
@@ -68,10 +68,10 @@ func (a *authRepository) QueryUserByEmail(email string) (entity.User, error) {
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			a.logger.Warn().Str("email", email).Msg("user not found")
-			return user, status.Error(codes.NotFound, dto.Err_NOTFOUND_USER_NOT_FOUND.Error())
+			return nil, status.Error(codes.NotFound, dto.Err_NOTFOUND_USER_NOT_FOUND.Error())
 		}
 		a.logger.Error().Err(err).Msg("failed to scan user")
-		return user, status.Error(codes.Internal, dto.Err_INTERNAL_FAILED_SCAN_USER.Error())
+		return nil, status.Error(codes.Internal, dto.Err_INTERNAL_FAILED_SCAN_USER.Error())
 	}
-	return user, nil
+	return &user, nil
 }
