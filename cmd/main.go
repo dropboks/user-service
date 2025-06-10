@@ -12,7 +12,7 @@ func main() {
 	grpcServer := server.GRPCServer{
 		Container:   container,
 		ServerReady: serverReady,
-		Address:     ":" + viper.GetString("app.port"),
+		Address:     ":" + viper.GetString("app.grpc.port"),
 	}
 	grpcServer.Run()
 	<-serverReady

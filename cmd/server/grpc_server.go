@@ -9,7 +9,6 @@ import (
 
 	"github.com/dropboks/user-service/internal/domain/handler"
 	"github.com/dropboks/user-service/internal/domain/service"
-	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 	"go.uber.org/dig"
@@ -24,7 +23,6 @@ type GRPCServer struct {
 
 func (s *GRPCServer) Run() {
 	err := s.Container.Invoke(func(
-		httpServer *gin.Engine,
 		grpcServer *grpc.Server,
 		logger zerolog.Logger,
 		db *pgxpool.Pool,
@@ -42,7 +40,7 @@ func (s *GRPCServer) Run() {
 				logger.Fatal().Msgf("gRPC server error: %v", serveErr)
 			}
 		}()
-
+		logger.Info().Msg("gRPC server running in port " + s.Address)
 		if s.ServerReady != nil {
 			s.ServerReady <- true
 		}
