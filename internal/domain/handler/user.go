@@ -31,7 +31,7 @@ func NewUserHandler(userService service.UserService, logger zerolog.Logger) User
 func (u *userHandler) GetProfile(ctx *gin.Context) {
 	userId := utils.GetUserId(ctx)
 	if userId == "" {
-		u.logger.Error().Msg("unathorized. user_id is missing")
+		u.logger.Error().Msg("unathorized")
 		res := _utils.ReturnResponseError(401, dto.Err_UNAUTHORIZED_USER_ID_NOTFOUND.Error())
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
 		return
