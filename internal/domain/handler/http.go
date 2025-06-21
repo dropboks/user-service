@@ -2,10 +2,9 @@ package handler
 
 import "github.com/gin-gonic/gin"
 
-func RegisterUserRoutes(r *gin.Engine, uh UserHandler) *gin.RouterGroup {
-	user := r.Group("/user", uh.GetProfile)
+func RegisterUserRoutes(r *gin.Engine, uh UserHandler) *gin.Engine {
 	{
-		user.GET("/me", uh.GetProfile)
+		r.GET("/me", uh.GetProfile)
 	}
-	return user
+	return r
 }
