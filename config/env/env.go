@@ -1,9 +1,18 @@
 package env
 
-import "github.com/spf13/viper"
+import (
+	"os"
+
+	"github.com/spf13/viper"
+)
 
 func Load() {
-	viper.SetConfigName("config")
+	env := os.Getenv("ENV")
+	configName := "config"
+	if env != "production" {
+		configName = "config.local"
+	}
+	viper.SetConfigName(configName)
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	if err := viper.ReadInConfig(); err != nil {
