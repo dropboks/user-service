@@ -1,5 +1,5 @@
 database:
-  host: "localhost"
+  host: "db"
   user: "daffaputra"
   password: "password"
   port: "5432"
@@ -11,7 +11,7 @@ app:
   grpc:
     port: 50051
   http:
-    port: 8082
+    port: 80
 
 server:
   cors:
