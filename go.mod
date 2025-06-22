@@ -5,8 +5,8 @@ go 1.24.2
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/dropboks/proto-user v0.0.0-20250604091659-b7b453695fab
-	github.com/dropboks/sharedlib v0.0.0-20250610024558-fd48e3b2004d
-	github.com/gin-contrib/cors v1.7.5
+	github.com/dropboks/sharedlib v0.0.0-20250622004919-36b558ab093c
+	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/rs/zerolog v1.34.0
@@ -25,7 +25,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.26.0 // indirect
-	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
+	github.com/go-viper/mapstructure/v2 v2.3.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -47,7 +47,7 @@ require (
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/ugorji/go/codec v1.2.14 // indirect
+	github.com/ugorji/go/codec v1.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.18.0 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
