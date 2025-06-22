@@ -6,7 +6,6 @@ import (
 	_utils "github.com/dropboks/sharedlib/utils"
 	"github.com/dropboks/user-service/internal/domain/dto"
 	"github.com/dropboks/user-service/internal/domain/service"
-	"github.com/dropboks/user-service/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
@@ -29,7 +28,7 @@ func NewUserHandler(userService service.UserService, logger zerolog.Logger) User
 }
 
 func (u *userHandler) GetProfile(ctx *gin.Context) {
-	userId := utils.GetUserId(ctx)
+	userId := _utils.GetUserId(ctx)
 	if userId == "" {
 		u.logger.Error().Msg("unathorized")
 		res := _utils.ReturnResponseError(401, dto.Err_UNAUTHORIZED_USER_ID_NOTFOUND.Error())
