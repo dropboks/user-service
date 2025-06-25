@@ -29,9 +29,11 @@ func (u *userService) GetProfile(userId string) (dto.GetProfileResponse, error) 
 		return dto.GetProfileResponse{}, err
 	}
 	profile := dto.GetProfileResponse{
-		FullName: user.FullName,
-		Image:    user.Image,
-		Email:    user.Email,
+		FullName:         user.FullName,
+		Image:            user.Image,
+		Email:            user.Email,
+		Verified:         user.Verified,
+		TwoFactorEnabled: user.TwoFactorEnabled,
 	}
 	return profile, nil
 }
