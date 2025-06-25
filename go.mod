@@ -4,8 +4,8 @@ go 1.24.2
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/dropboks/proto-user v0.0.0-20250604091659-b7b453695fab
-	github.com/dropboks/sharedlib v0.0.0-20250622004919-36b558ab093c
+	github.com/dropboks/proto-user v0.0.0-20250625014714-494533a5eba9
+	github.com/dropboks/sharedlib v0.0.0-20250624031638-a37fddbd1cf5
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
 	github.com/jackc/pgx/v5 v5.7.5
