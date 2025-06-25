@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/dropboks/proto-user/pkg/upb"
+	"github.com/dropboks/sharedlib/utils"
 	"github.com/dropboks/user-service/internal/domain/entity"
 	"github.com/dropboks/user-service/internal/domain/repository"
 	"github.com/rs/zerolog"
@@ -34,7 +35,7 @@ func (a *authService) UpdateUser(c context.Context, user *upb.User) error {
 	u := &entity.User{
 		ID:               user.GetId(),
 		FullName:         user.GetFullName(),
-		Image:            user.GetImage(),
+		Image:            utils.StringPtr(user.GetImage()),
 		Email:            user.GetEmail(),
 		Password:         user.GetPassword(),
 		Verified:         user.GetVerified(),
@@ -82,7 +83,7 @@ func (a *authService) CreateUser(user *upb.User) (*upb.Status, error) {
 	u := &entity.User{
 		ID:       user.GetId(),
 		FullName: user.GetFullName(),
-		Image:    user.GetImage(),
+		Image:    utils.StringPtr(user.GetImage()),
 		Email:    user.GetEmail(),
 		Password: user.GetPassword(),
 	}

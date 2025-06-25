@@ -15,10 +15,10 @@ var (
 
 type (
 	GetProfileResponse struct {
-		FullName         string `json:"full_name"`
-		Image            string `json:"image"`
-		Email            string `json:"email"`
-		Verified         bool   `json:"verified"`
-		TwoFactorEnabled bool   `json:"two_factor_enabled"`
+		FullName         string  `json:"full_name"`
+		Image            *string `json:"image"`
+		Email            string  `json:"email"`
+		Verified         bool    `json:"verified"`
+		TwoFactorEnabled bool    `json:"two_factor_enabled"`
 	}
 )
