@@ -7,6 +7,7 @@ import (
 	"github.com/dropboks/user-service/internal/domain/handler"
 	"github.com/dropboks/user-service/internal/domain/repository"
 	"github.com/dropboks/user-service/internal/domain/service"
+	"github.com/dropboks/user-service/internal/infrastructure/grpc"
 	"go.uber.org/dig"
 )
 
@@ -17,6 +18,12 @@ func BuildContainer() *dig.Container {
 	}
 	if err := container.Provide(database.New); err != nil {
 		panic("Failed to provide database: " + err.Error())
+	}
+	if err := container.Provide(grpc.NewGRPCClientManager); err != nil {
+		panic("Failed to provide GRPC Client Manager: " + err.Error())
+	}
+	if err := container.Provide(grpc.NewFileServiceConnection); err != nil {
+		panic("Failed to provide user service grpc connection: " + err.Error())
 	}
 	if err := container.Provide(repository.NewUserRepository); err != nil {
 		panic("Failed to provide authRepository: " + err.Error())
