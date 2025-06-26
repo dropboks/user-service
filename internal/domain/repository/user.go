@@ -40,6 +40,7 @@ func (a *userRepository) UpdateUser(user *entity.User) error {
 		Set("password", user.Password).
 		Set("verified", user.Verified).
 		Set("two_factor_enabled", user.TwoFactorEnabled).
+		Set("updated_at", sq.Expr("CURRENT_TIMESTAMP")).
 		Where(sq.Eq{"id": user.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
