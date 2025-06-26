@@ -12,6 +12,8 @@ github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSV
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/dropboks/proto-file v0.0.0-20250609044313-a7f78b2c48bf h1:w1OJZ9TkC62+E0tstPQFZqtYh32jnfbHHSYu/Oh7R9s=
+github.com/dropboks/proto-file v0.0.0-20250609044313-a7f78b2c48bf/go.mod h1:stfWzJh9Wmm3h5WqjQxMlEJFeUzWOlld4sc8HZrvYd4=
 github.com/dropboks/proto-user v0.0.0-20250604091659-b7b453695fab h1:ko91S2hQwTdoRjFh+nGiRM4Gn6S7IZk04jFcgT/eF8o=
 github.com/dropboks/proto-user v0.0.0-20250604091659-b7b453695fab/go.mod h1:zTOxvAVmer5UQ4b8LKj8O4unvnA57i1NvO5rpsKflrA=
 github.com/dropboks/proto-user v0.0.0-20250624070935-04a974b69472 h1:94bvwSUhrmLexIYS329ZLmV5X3eQv8X81ccfBXxsO4s=
@@ -83,6 +85,8 @@ github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHm
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
 github.com/klauspost/cpuid/v2 v2.2.10 h1:tBs3QSyvjDyFTq3uoc/9xFpCuOsJQFNPiAhYdw2skhE=
 github.com/klauspost/cpuid/v2 v2.2.10/go.mod h1:hqwkgyIinND0mEev00jJYCxPNVRVXFQeu1XKlok6oO0=
+github.com/klauspost/cpuid/v2 v2.2.11 h1:0OwqZRYI2rFrjS4kvkDnqJkKHdHaRnCm68/DY4OxRzU=
+github.com/klauspost/cpuid/v2 v2.2.11/go.mod h1:hqwkgyIinND0mEev00jJYCxPNVRVXFQeu1XKlok6oO0=
 github.com/knz/go-libedit v1.10.1/go.mod h1:MZTVkCWyz0oBc7JOWP3wNAzd002ZbM/5hgShxwh4x8M=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
