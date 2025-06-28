@@ -10,7 +10,6 @@ type (
 	UpdateUserRequest struct {
 		FullName         string                `form:"full_name"`
 		Image            *multipart.FileHeader `form:"image"`
-		Email            string                `form:"email"`
 		TwoFactorEnabled bool                  `form:"two_factor_enabled"`
 	}
 )

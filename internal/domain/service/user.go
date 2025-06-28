@@ -40,10 +40,6 @@ func (u *userService) UpdateUser(req *dto.UpdateUserRequest, userId string) erro
 	if req.FullName != user.FullName {
 		us.FullName = req.FullName
 	}
-	if req.Email != user.Email {
-		us.Email = req.FullName
-		us.Verified = false
-	}
 	if req.TwoFactorEnabled != user.TwoFactorEnabled {
 		us.TwoFactorEnabled = req.TwoFactorEnabled
 	}
