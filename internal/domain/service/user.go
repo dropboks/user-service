@@ -2,34 +2,109 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/dropboks/proto-file/pkg/fpb"
+	_dto "github.com/dropboks/sharedlib/dto"
 	"github.com/dropboks/sharedlib/utils"
 	"github.com/dropboks/user-service/internal/domain/dto"
 	"github.com/dropboks/user-service/internal/domain/repository"
 	"github.com/dropboks/user-service/pkg/constant"
+	"github.com/nats-io/nats.go/jetstream"
 	"github.com/rs/zerolog"
+	"github.com/spf13/viper"
 )
 
 type (
 	UserService interface {
 		GetProfile(userId string) (dto.GetProfileResponse, error)
 		UpdateUser(req *dto.UpdateUserRequest, userId string) error
+		UpdateEmail(req *dto.UpdateEmailRequest, userId string) error
+		UpdatePassword(req *dto.UpdatePasswordRequest, userId string) error
 	}
 	userService struct {
 		userRepository    repository.UserRepository
 		logger            zerolog.Logger
 		fileServiceClient fpb.FileServiceClient
+		redisRepository   repository.RedisRepository
+		js                jetstream.JetStream
 	}
 )
 
-func NewUserService(userRepo repository.UserRepository, logger zerolog.Logger, fileServiceClient fpb.FileServiceClient) UserService {
+func NewUserService(userRepo repository.UserRepository, logger zerolog.Logger, fileServiceClient fpb.FileServiceClient, redisRepository repository.RedisRepository, js jetstream.JetStream) UserService {
 	return &userService{
 		userRepository:    userRepo,
 		logger:            logger,
 		fileServiceClient: fileServiceClient,
+		redisRepository:   redisRepository,
+		js:                js,
 	}
+}
+
+func (u *userService) UpdatePassword(req *dto.UpdatePasswordRequest, userId string) error {
+	if req.NewPassword != req.ConfirmNewPassword {
+		return dto.Err_BAD_REQUEST_PASSWORD_CONFIRM_PASSWORD_DOESNT_MATCH
+	}
+	user, err := u.userRepository.QueryUserByUserId(userId)
+	if err != nil {
+		return err
+	}
+	ok := utils.HashPasswordCompare(req.Password, user.Password)
+	if !ok {
+		return dto.Err_UNAUTHORIZED_PASSWORD_WRONG
+	}
+	newPassword, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		return err
+	}
+	us := *user
+	us.Password = newPassword
+	if err := u.userRepository.UpdateUser(&us); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *userService) UpdateEmail(req *dto.UpdateEmailRequest, userId string) error {
+	ctx := context.Background()
+
+	verificationToken, err := utils.RandomString64()
+	if err != nil {
+		u.logger.Error().Err(err).Msg("error generate verification token")
+		return dto.Err_INTERNAL_GENERATE_TOKEN
+	}
+
+	savedEmail := fmt.Sprintf("newEmail:%s", userId)
+	if err := u.redisRepository.SetResource(ctx, savedEmail, req.Email, 30*time.Minute); err != nil {
+		return err
+	}
+
+	key := fmt.Sprintf("changeEmailToken:%s", userId)
+	if err := u.redisRepository.SetResource(ctx, key, verificationToken, 30*time.Minute); err != nil {
+		return err
+	}
+
+	link := fmt.Sprintf("%s/%suserid=%s&changeEmailToken=%s", viper.GetString("app.url"), "auth/verify-email?", userId, verificationToken)
+	subject := fmt.Sprintf("%s.%s", viper.GetString("jetstream.subject.mail"), userId)
+	msg := &_dto.MailNotificationMessage{
+		Receiver: []string{req.Email},
+		MsgType:  "changeEmail",
+		Message:  link,
+	}
+	marshalledMsg, err := json.Marshal(msg)
+	if err != nil {
+		u.logger.Error().Err(err).Msg("marshal data error")
+		return err
+	}
+	_, err = u.js.Publish(ctx, subject, []byte(marshalledMsg))
+	if err != nil {
+		u.logger.Error().Err(err).Msg("publish notification error")
+		return dto.Err_INTERNAL_PUBLISH_MESSAGE
+	}
+	return nil
 }
 
 func (u *userService) UpdateUser(req *dto.UpdateUserRequest, userId string) error {

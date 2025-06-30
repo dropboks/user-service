@@ -16,6 +16,8 @@ type (
 	UserHandler interface {
 		GetProfile(ctx *gin.Context)
 		UpdateUser(ctx *gin.Context)
+		ChangeEmail(ctx *gin.Context)
+		ChangePassword(ctx *gin.Context)
 	}
 	userHandler struct {
 		userService service.UserService
@@ -30,10 +32,57 @@ func NewUserHandler(userService service.UserService, logger zerolog.Logger) User
 	}
 }
 
+func (u *userHandler) ChangePassword(ctx *gin.Context) {
+	userId := utils.GetUserId(ctx)
+	if userId == "" {
+		u.logger.Error().Msg("unathorized. userId is not found")
+		res := utils.ReturnResponseError(401, dto.Err_UNAUTHORIZED_USER_ID_NOTFOUND.Error())
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
+		return
+	}
+	var req dto.UpdatePasswordRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		u.logger.Error().Err(err).Msg("Bad Request")
+		res := utils.ReturnResponseError(400, "invalid input")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+	if err := u.userService.UpdatePassword(&req, userId); err != nil {
+
+	}
+	res := utils.ReturnResponseSuccess(200, dto.SUCCESS_UPDATE_PASSWORD)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (u *userHandler) ChangeEmail(ctx *gin.Context) {
+	userId := utils.GetUserId(ctx)
+	if userId == "" {
+		u.logger.Error().Msg("unathorized. userId is not found")
+		res := utils.ReturnResponseError(401, dto.Err_UNAUTHORIZED_USER_ID_NOTFOUND.Error())
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
+		return
+	}
+	var req dto.UpdateEmailRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		u.logger.Error().Err(err).Msg("Bad Request")
+		res := utils.ReturnResponseError(400, "invalid input")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+	if err := u.userService.UpdateEmail(&req, userId); err != nil {
+		u.logger.Error().Err(err).Msg("Failed to update email")
+		res := utils.ReturnResponseError(500, "failed to update email")
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, res)
+		return
+	}
+	res := utils.ReturnResponseSuccess(200, dto.SUCCESS_UPDATE_EMAIL)
+	ctx.JSON(http.StatusOK, res)
+}
+
 func (u *userHandler) UpdateUser(ctx *gin.Context) {
 	userId := utils.GetUserId(ctx)
 	if userId == "" {
-		u.logger.Error().Msg("unathorized")
+		u.logger.Error().Msg("unathorized. userId is not found")
 		res := utils.ReturnResponseError(401, dto.Err_UNAUTHORIZED_USER_ID_NOTFOUND.Error())
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
 		return
@@ -42,7 +91,7 @@ func (u *userHandler) UpdateUser(ctx *gin.Context) {
 	var req dto.UpdateUserRequest
 	if err := ctx.ShouldBind(&req); err != nil {
 		u.logger.Error().Err(err).Msg("Bad Request")
-		res := utils.ReturnResponseError(400, "Data type not match")
+		res := utils.ReturnResponseError(400, "invalid input")
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
