@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 
 	"github.com/dropboks/proto-file/pkg/fpb"
 	"github.com/dropboks/sharedlib/utils"
@@ -37,8 +38,9 @@ func (u *userService) UpdateUser(req *dto.UpdateUserRequest, userId string) erro
 		return err
 	}
 	us := *user
-	if req.FullName != user.FullName {
-		us.FullName = req.FullName
+	trimmedName := strings.TrimSpace(req.FullName)
+	if trimmedName != user.FullName {
+		us.FullName = trimmedName
 	}
 	if req.TwoFactorEnabled != user.TwoFactorEnabled {
 		us.TwoFactorEnabled = req.TwoFactorEnabled
@@ -69,7 +71,10 @@ func (u *userService) UpdateUser(req *dto.UpdateUserRequest, userId string) erro
 		us.Image = utils.StringPtr(resp.GetName())
 	}
 	err = u.userRepository.UpdateUser(&us)
-	if err != nil && req.Image != nil && req.Image.Filename != "" {
+	if err == nil && req.Image != nil && req.Image.Filename != "" {
+		_, err := u.fileServiceClient.RemoveProfileImage(ctx, &fpb.ImageName{Name: *user.Image})
+		return err
+	} else if err != nil && req.Image != nil && req.Image.Filename != "" {
 		_, err := u.fileServiceClient.RemoveProfileImage(ctx, &fpb.ImageName{Name: *us.Image})
 		return err
 	}
