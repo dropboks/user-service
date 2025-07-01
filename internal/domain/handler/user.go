@@ -48,7 +48,23 @@ func (u *userHandler) ChangePassword(ctx *gin.Context) {
 		return
 	}
 	if err := u.userService.UpdatePassword(&req, userId); err != nil {
-
+		u.logger.Error().Err(err).Msg("Failed to update password")
+		if err == dto.Err_BAD_REQUEST_PASSWORD_CONFIRM_PASSWORD_DOESNT_MATCH {
+			res := utils.ReturnResponseError(400, err.Error())
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+			return
+		} else if err == dto.Err_UNAUTHORIZED_PASSWORD_WRONG {
+			res := utils.ReturnResponseError(401, err.Error())
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
+			return
+		} else if err == dto.Err_NOTFOUND_USER_NOT_FOUND {
+			res := utils.ReturnResponseError(404, err.Error())
+			ctx.AbortWithStatusJSON(http.StatusNotFound, res)
+			return
+		}
+		res := utils.ReturnResponseError(500, "failed to update password")
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, res)
+		return
 	}
 	res := utils.ReturnResponseSuccess(200, dto.SUCCESS_UPDATE_PASSWORD)
 	ctx.JSON(http.StatusOK, res)
