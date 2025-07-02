@@ -10,3 +10,32 @@ air-windows:
 
 air-unix:
 	@~/go/bin/air -c .air.unix.toml
+
+pre-commit:
+	@echo "Checking staged Go files..."
+	@STAGED_GO_FILES=$$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$$' || true); \
+	if [ -n "$$STAGED_GO_FILES" ]; then \
+		echo "Running go fmt on staged files..."; \
+		UNFORMATTED=$$(gofmt -l $$STAGED_GO_FILES); \
+		if [ -n "$$UNFORMATTED" ]; then \
+			echo "[FAIL] The following staged Go files are not properly formatted:"; \
+			echo "$$UNFORMATTED"; \
+			exit 1; \
+		else \
+			echo "[SUCCESS] All staged Go files are properly formatted."; \
+		fi \
+	else \
+		echo "No staged Go files to check."; \
+	fi
+
+	@echo "Running go vet..."
+	@go vet ./... || (echo "[FAIL] go vet failed." && exit 1)
+
+	@echo "Running go test (it/ut/e2e)..."
+	@go test ./test/it/... ./test/ut/... ./test/e2e/... || (echo "[FAIL] Tests failed." && exit 1)
+
+	@echo "[SUCCESS] Pre-commit checks passed!"
+
+pre-commit-preparation:
+	@cp ./bin/pre-commit ./.git/hooks/pre-commit
+	@chmod +x ./.git/hooks/pre-commit
