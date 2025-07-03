@@ -81,11 +81,13 @@ func (a *authService) GetUserByUserId(user *upb.UserId) (*upb.User, error) {
 
 func (a *authService) CreateUser(user *upb.User) (*upb.Status, error) {
 	u := &entity.User{
-		ID:       user.GetId(),
-		FullName: user.GetFullName(),
-		Image:    utils.StringPtr(user.GetImage()),
-		Email:    user.GetEmail(),
-		Password: user.GetPassword(),
+		ID:               user.GetId(),
+		FullName:         user.GetFullName(),
+		Image:            utils.StringPtr(user.GetImage()),
+		Email:            user.GetEmail(),
+		Password:         user.GetPassword(),
+		Verified:         user.GetVerified(),
+		TwoFactorEnabled: user.GetTwoFactorEnabled(),
 	}
 	err := a.userRepository.CreateNewUser(u)
 	if err != nil {

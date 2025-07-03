@@ -63,8 +63,8 @@ func (a *userRepository) UpdateUser(user *entity.User) error {
 
 func (a *userRepository) CreateNewUser(user *entity.User) error {
 	query, args, err := sq.Insert("users").
-		Columns("id", "full_name", "image", "email", "password").
-		Values(user.ID, user.FullName, user.Image, user.Email, user.Password).
+		Columns("id", "full_name", "image", "email", "password", "verified", "two_factor_enabled").
+		Values(user.ID, user.FullName, user.Image, user.Email, user.Password, user.Verified, user.TwoFactorEnabled).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
