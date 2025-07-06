@@ -8,11 +8,11 @@ import (
 
 func Load() {
 	env := os.Getenv("ENV")
-	configName := "config"
+	configName := "config.local"
 	configpath := "."
 	switch env {
 	case "production":
-		configName = "config.local"
+		configName = "config"
 	case "test":
 		configName = "config.test"
 		configpath = "../../"
