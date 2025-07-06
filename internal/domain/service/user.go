@@ -87,7 +87,7 @@ func (u *userService) UpdateEmail(req *dto.UpdateEmailRequest, userId string) er
 		return err
 	}
 
-	link := fmt.Sprintf("%s/%suserid=%s&changeEmailToken=%s", viper.GetString("app.url"), "auth/verify-email?", userId, verificationToken)
+	link := fmt.Sprintf("%s/%suserid=%s&changeEmailToken=%s", viper.GetString("app.auth_url"), viper.GetString("app.verification_url"), userId, verificationToken)
 	subject := fmt.Sprintf("%s.%s", viper.GetString("jetstream.subject.mail"), userId)
 	msg := &_dto.MailNotificationMessage{
 		Receiver: []string{req.Email},
