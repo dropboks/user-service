@@ -7,7 +7,11 @@ import (
 	"time"
 
 	"github.com/dropboks/user-service/internal/domain/handler"
+	"github.com/dropboks/user-service/internal/infrastructure/grpc"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nats-io/nats.go"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"go.uber.org/dig"
 )
@@ -24,7 +28,17 @@ func (s *HTTPServer) Run(ctx context.Context) {
 			logger zerolog.Logger,
 			router *gin.Engine,
 			uh handler.UserHandler,
+			pgx *pgxpool.Pool,
+			nc *nats.Conn,
+			redis *redis.Client,
+			grpcClientManager *grpc.GRPCClientManager,
+
 		) {
+			defer grpcClientManager.CloseAllConnections()
+			defer pgx.Close()
+			defer nc.Drain()
+			defer redis.Close()
+
 			handler.RegisterUserRoutes(router, uh)
 			srv := &http.Server{
 				Addr:    s.Address,
