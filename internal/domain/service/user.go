@@ -7,13 +7,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dropboks/event-bus-client/pkg/event"
 	"github.com/dropboks/proto-file/pkg/fpb"
+	"github.com/dropboks/proto-user/pkg/upb"
 	_dto "github.com/dropboks/sharedlib/dto"
 	"github.com/dropboks/sharedlib/utils"
 	"github.com/dropboks/user-service/internal/domain/dto"
 	"github.com/dropboks/user-service/internal/domain/repository"
+	_mq "github.com/dropboks/user-service/internal/infrastructure/message-queue"
 	"github.com/dropboks/user-service/pkg/constant"
-	"github.com/nats-io/nats.go/jetstream"
 	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
 )
@@ -26,21 +28,29 @@ type (
 		UpdatePassword(req *dto.UpdatePasswordRequest, userId string) error
 	}
 	userService struct {
-		userRepository    repository.UserRepository
-		logger            zerolog.Logger
-		fileServiceClient fpb.FileServiceClient
-		redisRepository   repository.RedisRepository
-		js                jetstream.JetStream
+		userRepository     repository.UserRepository
+		logger             zerolog.Logger
+		fileServiceClient  fpb.FileServiceClient
+		redisRepository    repository.RedisRepository
+		notificationStream _mq.NotificationStream
+		eventEmitter       event.Emitter
 	}
 )
 
-func NewUserService(userRepo repository.UserRepository, logger zerolog.Logger, fileServiceClient fpb.FileServiceClient, redisRepository repository.RedisRepository, js jetstream.JetStream) UserService {
+func NewUserService(userRepo repository.UserRepository,
+	logger zerolog.Logger,
+	fileServiceClient fpb.FileServiceClient,
+	redisRepository repository.RedisRepository,
+	notificationStream _mq.NotificationStream,
+	eventEmitter event.Emitter,
+) UserService {
 	return &userService{
-		userRepository:    userRepo,
-		logger:            logger,
-		fileServiceClient: fileServiceClient,
-		redisRepository:   redisRepository,
-		js:                js,
+		userRepository:     userRepo,
+		logger:             logger,
+		fileServiceClient:  fileServiceClient,
+		redisRepository:    redisRepository,
+		notificationStream: notificationStream,
+		eventEmitter:       eventEmitter,
 	}
 }
 
@@ -65,6 +75,17 @@ func (u *userService) UpdatePassword(req *dto.UpdatePasswordRequest, userId stri
 	if err := u.userRepository.UpdateUser(&us); err != nil {
 		return err
 	}
+	go func() {
+		u.eventEmitter.UpdateUser(context.Background(), &upb.User{
+			Id:               us.ID,
+			FullName:         us.FullName,
+			Image:            us.Image,
+			Email:            us.Email,
+			Password:         us.Password,
+			Verified:         us.Verified,
+			TwoFactorEnabled: us.TwoFactorEnabled,
+		})
+	}()
 	return nil
 }
 
@@ -88,7 +109,7 @@ func (u *userService) UpdateEmail(req *dto.UpdateEmailRequest, userId string) er
 	}
 
 	link := fmt.Sprintf("%s/%suserid=%s&changeEmailToken=%s", viper.GetString("app.auth_url"), viper.GetString("app.verification_url"), userId, verificationToken)
-	subject := fmt.Sprintf("%s.%s", viper.GetString("jetstream.subject.mail"), userId)
+	subject := fmt.Sprintf("%s.%s", viper.GetString("jetstream.notification.subject.mail"), userId)
 	msg := &_dto.MailNotificationMessage{
 		Receiver: []string{req.Email},
 		MsgType:  "changeEmail",
@@ -99,7 +120,7 @@ func (u *userService) UpdateEmail(req *dto.UpdateEmailRequest, userId string) er
 		u.logger.Error().Err(err).Msg("marshal data error")
 		return err
 	}
-	_, err = u.js.Publish(ctx, subject, []byte(marshalledMsg))
+	_, err = u.notificationStream.Publish(ctx, subject, []byte(marshalledMsg))
 	if err != nil {
 		u.logger.Error().Err(err).Msg("publish notification error")
 		return dto.Err_INTERNAL_PUBLISH_MESSAGE
@@ -153,6 +174,18 @@ func (u *userService) UpdateUser(req *dto.UpdateUserRequest, userId string) erro
 		_, err := u.fileServiceClient.RemoveProfileImage(ctx, &fpb.ImageName{Name: *us.Image})
 		return err
 	}
+	// push event bus in goroutine
+	go func() {
+		u.eventEmitter.UpdateUser(context.Background(), &upb.User{
+			Id:               us.ID,
+			FullName:         us.FullName,
+			Image:            us.Image,
+			Email:            us.Email,
+			Password:         us.Password,
+			Verified:         us.Verified,
+			TwoFactorEnabled: us.TwoFactorEnabled,
+		})
+	}()
 	return nil
 }
 

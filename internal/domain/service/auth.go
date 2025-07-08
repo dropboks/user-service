@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/dropboks/event-bus-client/pkg/event"
 	"github.com/dropboks/proto-user/pkg/upb"
 	"github.com/dropboks/sharedlib/utils"
 	"github.com/dropboks/user-service/internal/domain/entity"
@@ -20,17 +21,18 @@ type (
 	authService struct {
 		userRepository repository.UserRepository
 		logger         zerolog.Logger
+		eventEmitter   event.Emitter
 	}
 )
 
-func NewAuthService(userRepository repository.UserRepository, logger zerolog.Logger) AuthService {
+func NewAuthService(userRepository repository.UserRepository, emitter event.Emitter, logger zerolog.Logger) AuthService {
 	return &authService{
 		userRepository: userRepository,
 		logger:         logger,
+		eventEmitter:   emitter,
 	}
 }
 
-// UpdateUser implements AuthService.
 func (a *authService) UpdateUser(c context.Context, user *upb.User) error {
 	u := &entity.User{
 		ID:               user.GetId(),
@@ -44,6 +46,18 @@ func (a *authService) UpdateUser(c context.Context, user *upb.User) error {
 	if err := a.userRepository.UpdateUser(u); err != nil {
 		return err
 	}
+	// push event bus in goroutine
+	go func() {
+		a.eventEmitter.UpdateUser(context.Background(), &upb.User{
+			Id:               u.ID,
+			FullName:         u.FullName,
+			Image:            u.Image,
+			Email:            u.Email,
+			Password:         u.Password,
+			Verified:         u.Verified,
+			TwoFactorEnabled: u.TwoFactorEnabled,
+		})
+	}()
 	return nil
 }
 
@@ -93,5 +107,17 @@ func (a *authService) CreateUser(user *upb.User) (*upb.Status, error) {
 	if err != nil {
 		return nil, err
 	}
+	// push event bus in goroutine
+	go func() {
+		a.eventEmitter.InsertUser(context.Background(), &upb.User{
+			Id:               u.ID,
+			FullName:         u.FullName,
+			Image:            u.Image,
+			Email:            u.Email,
+			Password:         u.Password,
+			Verified:         u.Verified,
+			TwoFactorEnabled: u.TwoFactorEnabled,
+		})
+	}()
 	return &upb.Status{Success: true}, nil
 }
