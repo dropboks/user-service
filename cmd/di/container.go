@@ -1,6 +1,7 @@
 package di
 
 import (
+	"github.com/dropboks/event-bus-client/pkg/event"
 	"github.com/dropboks/user-service/config/cache"
 	"github.com/dropboks/user-service/config/database"
 	"github.com/dropboks/user-service/config/logger"
@@ -11,6 +12,7 @@ import (
 	"github.com/dropboks/user-service/internal/domain/service"
 	_cache "github.com/dropboks/user-service/internal/infrastructure/cache"
 	"github.com/dropboks/user-service/internal/infrastructure/grpc"
+	_mq "github.com/dropboks/user-service/internal/infrastructure/message-queue"
 	"go.uber.org/dig"
 )
 
@@ -26,7 +28,13 @@ func BuildContainer() *dig.Container {
 		panic("Failed to provide nats connection: " + err.Error())
 	}
 	if err := container.Provide(mq.NewJetstream); err != nil {
-		panic("Failed to provide jetstream connection: " + err.Error())
+		panic("Failed to provide jetstream instance: " + err.Error())
+	}
+	if err := container.Provide(_mq.NewNotificationStream); err != nil {
+		panic("Failed to provide notification Stream: " + err.Error())
+	}
+	if err := container.Provide(event.NewEmitter); err != nil {
+		panic("Failed to provide event bus emitter: " + err.Error())
 	}
 	if err := container.Provide(cache.New); err != nil {
 		panic("Failed to provide cache client: " + err.Error())
