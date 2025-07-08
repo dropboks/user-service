@@ -4,8 +4,9 @@ go 1.24.2
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/dropboks/event-bus-client v0.0.0-20250708092155-e109e3ad4b52
 	github.com/dropboks/proto-file v0.0.0-20250609044313-a7f78b2c48bf
-	github.com/dropboks/proto-user v0.0.0-20250625031838-748bd8c8e9b5
+	github.com/dropboks/proto-user v0.0.0-20250707095407-f3d6a5abdba6
 	github.com/dropboks/sharedlib v0.0.0-20250630083049-8e0644a513aa
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
@@ -20,10 +21,11 @@ require (
 
 require (
 	github.com/bytedance/sonic v1.13.3 // indirect
-	github.com/bytedance/sonic/loader v0.2.4 // indirect
+	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/dropboks/proto-event v0.0.0-20250708021719-ce25723e7fdb // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
@@ -63,7 +65,7 @@ require (
 	golang.org/x/sync v0.15.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
