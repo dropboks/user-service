@@ -22,7 +22,7 @@ func main() {
 	httpServer := &server.HTTPServer{
 		Container:   container,
 		ServerReady: httpServerReady,
-		Address: ":"+viper.GetString("app.http.port"),
+		Address:     ":" + viper.GetString("app.http.port"),
 	}
 	go func() {
 		httpServer.Run(ctx)
@@ -44,7 +44,8 @@ func main() {
 	<-grpcServerReady
 
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(sig, os.Interrupt, syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
+
 	<-sig
 	cancel()
 
