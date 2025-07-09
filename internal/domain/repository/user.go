@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/dropboks/sharedlib/model"
 	"github.com/dropboks/user-service/internal/domain/dto"
-	"github.com/dropboks/user-service/internal/domain/entity"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
@@ -14,10 +14,10 @@ import (
 
 type (
 	UserRepository interface {
-		CreateNewUser(*entity.User) error
-		QueryUserByEmail(string) (*entity.User, error)
-		QueryUserByUserId(string) (*entity.User, error)
-		UpdateUser(*entity.User) error
+		CreateNewUser(*model.User) error
+		QueryUserByEmail(string) (*model.User, error)
+		QueryUserByUserId(string) (*model.User, error)
+		UpdateUser(*model.User) error
 	}
 	userRepository struct {
 		pgx    *pgxpool.Pool
@@ -32,7 +32,7 @@ func NewUserRepository(pgx *pgxpool.Pool, logger zerolog.Logger) UserRepository 
 	}
 }
 
-func (a *userRepository) UpdateUser(user *entity.User) error {
+func (a *userRepository) UpdateUser(user *model.User) error {
 	query, args, err := sq.Update("users").
 		Set("full_name", user.FullName).
 		Set("image", user.Image).
@@ -61,7 +61,7 @@ func (a *userRepository) UpdateUser(user *entity.User) error {
 	return nil
 }
 
-func (a *userRepository) CreateNewUser(user *entity.User) error {
+func (a *userRepository) CreateNewUser(user *model.User) error {
 	query, args, err := sq.Insert("users").
 		Columns("id", "full_name", "image", "email", "password", "verified", "two_factor_enabled").
 		Values(user.ID, user.FullName, user.Image, user.Email, user.Password, user.Verified, user.TwoFactorEnabled).
@@ -80,8 +80,8 @@ func (a *userRepository) CreateNewUser(user *entity.User) error {
 	return nil
 }
 
-func (a *userRepository) QueryUserByUserId(userId string) (*entity.User, error) {
-	var user entity.User
+func (a *userRepository) QueryUserByUserId(userId string) (*model.User, error) {
+	var user model.User
 	query, args, err := sq.Select("id", "full_name", "image", "email", "password", "verified", "two_factor_enabled").
 		From("users").
 		Where(sq.Eq{"id": userId}).
@@ -106,8 +106,8 @@ func (a *userRepository) QueryUserByUserId(userId string) (*entity.User, error) 
 
 }
 
-func (a *userRepository) QueryUserByEmail(email string) (*entity.User, error) {
-	var user entity.User
+func (a *userRepository) QueryUserByEmail(email string) (*model.User, error) {
+	var user model.User
 	query, args, err := sq.Select("id", "full_name", "image", "email", "password", "verified", "two_factor_enabled").
 		From("users").
 		Where(sq.Eq{"email": email}).
