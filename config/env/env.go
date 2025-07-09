@@ -17,7 +17,7 @@ func Load() {
 		configName = "config.test"
 		configpath = "../../"
 	case "test-dependence":
-		configName = "config.test"
+		configName = "config.test-dependence"
 	}
 	viper.SetConfigName(configName)
 	viper.SetConfigType("yaml")
