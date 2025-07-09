@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
+	"github.com/spf13/viper"
 	"go.uber.org/dig"
 )
 
@@ -52,7 +54,15 @@ func (s *HTTPServer) Run(ctx context.Context) {
 			}()
 
 			if s.ServerReady != nil {
-				s.ServerReady <- true
+				for range 50 {
+					conn, err := net.DialTimeout("tcp", ":"+viper.GetString("app.http.port"), 100*time.Millisecond)
+					if err == nil {
+						conn.Close()
+						s.ServerReady <- true
+						break
+					}
+					time.Sleep(100 * time.Millisecond)
+				}
 			}
 
 			<-ctx.Done()

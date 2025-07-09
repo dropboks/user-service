@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"time"
 
 	"github.com/dropboks/user-service/internal/domain/handler"
 	"github.com/dropboks/user-service/internal/domain/service"
@@ -38,10 +39,19 @@ func (s *GRPCServer) Run(ctx context.Context) {
 				logger.Fatal().Msgf("gRPC server error: %v", serveErr)
 			}
 		}()
-		logger.Info().Msg("gRPC server running in port " + s.Address)
+
 		if s.ServerReady != nil {
-			s.ServerReady <- true
+			for range 50 {
+				conn, err := net.DialTimeout("tcp", s.Address, 100*time.Millisecond)
+				if err == nil {
+					conn.Close()
+					s.ServerReady <- true
+					break
+				}
+				time.Sleep(100 * time.Millisecond)
+			}
 		}
+		logger.Info().Msg("gRPC server running in port " + s.Address)
 
 		<-ctx.Done()
 		logger.Info().Msg("Shutting down gRPC server...")
