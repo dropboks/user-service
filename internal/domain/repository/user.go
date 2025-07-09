@@ -7,8 +7,8 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/dropboks/sharedlib/model"
 	"github.com/dropboks/user-service/internal/domain/dto"
+	_db "github.com/dropboks/user-service/internal/infrastructure/database"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 )
 
@@ -20,12 +20,12 @@ type (
 		UpdateUser(*model.User) error
 	}
 	userRepository struct {
-		pgx    *pgxpool.Pool
+		pgx    _db.Querier
 		logger zerolog.Logger
 	}
 )
 
-func NewUserRepository(pgx *pgxpool.Pool, logger zerolog.Logger) UserRepository {
+func NewUserRepository(pgx _db.Querier, logger zerolog.Logger) UserRepository {
 	return &userRepository{
 		pgx:    pgx,
 		logger: logger,

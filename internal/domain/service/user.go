@@ -32,7 +32,7 @@ type (
 		logger             zerolog.Logger
 		fileServiceClient  fpb.FileServiceClient
 		redisRepository    repository.RedisRepository
-		notificationStream _mq.NotificationStream
+		notificationStream _mq.Nats
 		eventEmitter       event.Emitter
 	}
 )
@@ -41,7 +41,7 @@ func NewUserService(userRepo repository.UserRepository,
 	logger zerolog.Logger,
 	fileServiceClient fpb.FileServiceClient,
 	redisRepository repository.RedisRepository,
-	notificationStream _mq.NotificationStream,
+	notificationStream _mq.Nats,
 	eventEmitter event.Emitter,
 ) UserService {
 	return &userService{
