@@ -40,9 +40,10 @@ func (a *AuthGrpcHandler) CreateUser(c context.Context, user *upb.User) (*upb.St
 
 func (a *AuthGrpcHandler) UpdateUser(c context.Context, user *upb.User) (*upb.Status, error) {
 	if err := a.authService.UpdateUser(c, user); err != nil {
-		if err == dto.Err_NOTFOUND_USER_NOT_FOUND {
+		switch err {
+		case dto.Err_NOTFOUND_USER_NOT_FOUND:
 			return nil, _status.Error(codes.NotFound, err.Error())
-		} else if err == dto.Err_INTERNAL_FAILED_BUILD_QUERY || err == dto.Err_INTERNAL_FAILED_INSERT_USER {
+		case dto.Err_INTERNAL_FAILED_BUILD_QUERY, dto.Err_INTERNAL_FAILED_INSERT_USER:
 			return nil, _status.Error(codes.Internal, err.Error())
 		}
 		return nil, _status.Error(codes.Internal, err.Error())

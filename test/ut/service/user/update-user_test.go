@@ -119,7 +119,7 @@ func (u *UpdateUserUserServiceSuite) TestUserService_UpdateUser_InvalidImageExte
 	err := u.userService.UpdateUser(req, userId)
 
 	u.Error(err)
-	u.Equal(dto.Err_BAD_REQUEST_WRONG_EXTENTION, err)
+	u.Equal(dto.Err_BAD_REQUEST_WRONG_EXTENSION, err)
 	u.userRepository.AssertExpectations(u.T())
 }
 

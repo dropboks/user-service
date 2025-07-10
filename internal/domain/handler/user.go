@@ -49,15 +49,16 @@ func (u *userHandler) ChangePassword(ctx *gin.Context) {
 	}
 	if err := u.userService.UpdatePassword(&req, userId); err != nil {
 		u.logger.Error().Err(err).Msg("Failed to update password")
-		if err == dto.Err_BAD_REQUEST_PASSWORD_CONFIRM_PASSWORD_DOESNT_MATCH {
+		switch err {
+		case dto.Err_BAD_REQUEST_PASSWORD_CONFIRM_PASSWORD_DOESNT_MATCH:
 			res := utils.ReturnResponseError(400, err.Error())
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return
-		} else if err == dto.Err_UNAUTHORIZED_PASSWORD_WRONG {
+		case dto.Err_UNAUTHORIZED_PASSWORD_WRONG:
 			res := utils.ReturnResponseError(401, err.Error())
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
 			return
-		} else if err == dto.Err_NOTFOUND_USER_NOT_FOUND {
+		case dto.Err_NOTFOUND_USER_NOT_FOUND:
 			res := utils.ReturnResponseError(404, err.Error())
 			ctx.AbortWithStatusJSON(http.StatusNotFound, res)
 			return
@@ -112,15 +113,16 @@ func (u *userHandler) UpdateUser(ctx *gin.Context) {
 		return
 	}
 	if err := u.userService.UpdateUser(&req, userId); err != nil {
-		if err == dto.Err_NOTFOUND_USER_NOT_FOUND {
+		switch err {
+		case dto.Err_NOTFOUND_USER_NOT_FOUND:
 			res := utils.ReturnResponseError(404, err.Error())
 			ctx.AbortWithStatusJSON(http.StatusNotFound, res)
 			return
-		} else if err == dto.Err_BAD_REQUEST_WRONG_EXTENTION {
+		case dto.Err_BAD_REQUEST_WRONG_EXTENSION:
 			res := utils.ReturnResponseError(400, err.Error())
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return
-		} else if err == dto.Err_BAD_REQUEST_LIMIT_SIZE_EXCEEDED {
+		case dto.Err_BAD_REQUEST_LIMIT_SIZE_EXCEEDED:
 			res := utils.ReturnResponseError(400, err.Error())
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return
@@ -150,11 +152,12 @@ func (u *userHandler) GetProfile(ctx *gin.Context) {
 	}
 	user, err := u.userService.GetProfile(userId)
 	if err != nil {
-		if err == dto.Err_INTERNAL_FAILED_BUILD_QUERY || err == dto.Err_INTERNAL_FAILED_SCAN_USER {
+		switch err {
+		case dto.Err_INTERNAL_FAILED_BUILD_QUERY, dto.Err_INTERNAL_FAILED_SCAN_USER:
 			res := utils.ReturnResponseError(500, err.Error())
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, res)
 			return
-		} else if err == dto.Err_NOTFOUND_USER_NOT_FOUND {
+		case dto.Err_NOTFOUND_USER_NOT_FOUND:
 			res := utils.ReturnResponseError(404, err.Error())
 			ctx.AbortWithStatusJSON(http.StatusNotFound, res)
 			return
