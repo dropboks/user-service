@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"mime/multipart"
 	"testing"
+	"time"
 
 	"github.com/dropboks/proto-file/pkg/fpb"
 	"github.com/dropboks/sharedlib/model"
@@ -17,7 +18,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type UpdateUserServiceSuite struct {
+type UpdateUserUserServiceSuite struct {
 	suite.Suite
 	userService        service.UserService
 	userRepository     *mocks.UserRepositoryMock
@@ -27,7 +28,7 @@ type UpdateUserServiceSuite struct {
 	redisRepository    *mocks.MockRedisRepository
 }
 
-func (u *UpdateUserServiceSuite) SetupSuite() {
+func (u *UpdateUserUserServiceSuite) SetupSuite() {
 
 	mockUserRepo := new(mocks.UserRepositoryMock)
 	mockEventEmitter := new(mocks.EmitterMock)
@@ -36,6 +37,8 @@ func (u *UpdateUserServiceSuite) SetupSuite() {
 	mockRedisRepository := new(mocks.MockRedisRepository)
 
 	logger := zerolog.Nop()
+	// logger := zerolog.New(zerolog.NewConsoleWriter()).With().Timestamp().Logger()
+
 	u.userRepository = mockUserRepo
 	u.eventEmitter = mockEventEmitter
 	u.fileService = mockFileService
@@ -44,7 +47,7 @@ func (u *UpdateUserServiceSuite) SetupSuite() {
 	u.userService = service.NewUserService(mockUserRepo, logger, mockFileService, mockRedisRepository, mockNotificationStream, mockEventEmitter)
 }
 
-func (u *UpdateUserServiceSuite) SetupTest() {
+func (u *UpdateUserUserServiceSuite) SetupTest() {
 	u.userRepository.ExpectedCalls = nil
 	u.eventEmitter.ExpectedCalls = nil
 	u.fileService.ExpectedCalls = nil
@@ -56,13 +59,14 @@ func (u *UpdateUserServiceSuite) SetupTest() {
 	u.fileService.Calls = nil
 	u.notificationStream.Calls = nil
 	u.redisRepository.Calls = nil
+
 }
 
-func TestUpdateUserServiceSuite(t *testing.T) {
-	suite.Run(t, &UpdateUserServiceSuite{})
+func TestUpdateUserUserServiceSuite(t *testing.T) {
+	suite.Run(t, &UpdateUserUserServiceSuite{})
 }
 
-func (u *UpdateUserServiceSuite) TestUserService_UpdateUser_Success() {
+func (u *UpdateUserUserServiceSuite) TestUserService_UpdateUser_Success() {
 	userId := "user-123"
 	req := &dto.UpdateUserRequest{
 		FullName:         "Updated Name",
@@ -75,16 +79,18 @@ func (u *UpdateUserServiceSuite) TestUserService_UpdateUser_Success() {
 	}
 	u.userRepository.On("QueryUserByUserId", userId).Return(user, nil)
 	u.userRepository.On("UpdateUser", mock.Anything).Return(nil)
-	u.eventEmitter.On("UpdateUser", mock.Anything, mock.Anything).Return(nil).Maybe()
+	u.eventEmitter.On("UpdateUser", mock.Anything, mock.AnythingOfType("*upb.User")).Return(nil).Maybe()
 
 	err := u.userService.UpdateUser(req, userId)
 
 	u.NoError(err)
 	u.userRepository.AssertExpectations(u.T())
-	u.eventEmitter.AssertExpectations(u.T())
+
+	time.Sleep(time.Second)
+	u.eventEmitter.AssertCalled(u.T(), "UpdateUser", mock.Anything, mock.AnythingOfType("*upb.User"))
 }
 
-func (u *UpdateUserServiceSuite) TestUserService_UpdateUser_UserNotFound() {
+func (u *UpdateUserUserServiceSuite) TestUserService_UpdateUser_UserNotFound() {
 	userId := "user-404"
 	req := &dto.UpdateUserRequest{
 		FullName: "Nonexistent User",
@@ -98,7 +104,7 @@ func (u *UpdateUserServiceSuite) TestUserService_UpdateUser_UserNotFound() {
 	u.userRepository.AssertExpectations(u.T())
 }
 
-func (u *UpdateUserServiceSuite) TestUserService_UpdateUser_InvalidImageExtension() {
+func (u *UpdateUserUserServiceSuite) TestUserService_UpdateUser_InvalidImageExtension() {
 	userId := "user-123"
 	req := &dto.UpdateUserRequest{
 		Image: &multipart.FileHeader{
@@ -117,7 +123,7 @@ func (u *UpdateUserServiceSuite) TestUserService_UpdateUser_InvalidImageExtensio
 	u.userRepository.AssertExpectations(u.T())
 }
 
-func (u *UpdateUserServiceSuite) TestUserService_UpdateUser_ImageUploadError() {
+func (u *UpdateUserUserServiceSuite) TestUserService_UpdateUser_ImageUploadError() {
 	userId := "user-123"
 
 	imageData := bytes.Repeat([]byte("test"), 1024)

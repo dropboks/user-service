@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/dropboks/sharedlib/model"
 	"github.com/dropboks/user-service/internal/domain/dto"
@@ -72,16 +73,16 @@ func (u *UpdatePasswordServiceSuite) TestUserService_UpdatePassword_Success() {
 		ID:       userId,
 		Password: oldPassword,
 	}
-	u.userRepository.On("QueryUserByUserId", userId).Return(user, nil).Once()
-	u.userRepository.On("UpdateUser", mock.AnythingOfType("*model.User")).Return(nil).Once()
-
-	u.eventEmitter.On("UpdateUser", mock.Anything, mock.Anything).Return(nil).Maybe()
+	u.userRepository.On("QueryUserByUserId", userId).Return(user, nil)
+	u.userRepository.On("UpdateUser", mock.Anything).Return(nil)
+	u.eventEmitter.On("UpdateUser", mock.Anything, mock.AnythingOfType("*upb.User")).Return(nil).Maybe()
 
 	err := u.userService.UpdatePassword(req, userId)
 
 	u.NoError(err)
 	u.userRepository.AssertExpectations(u.T())
-	u.eventEmitter.AssertExpectations(u.T())
+	time.Sleep(time.Second)
+	u.eventEmitter.AssertCalled(u.T(), "UpdateUser", mock.Anything, mock.AnythingOfType("*upb.User"))
 }
 
 func (u *UpdatePasswordServiceSuite) TestUserService_UpdatePassword_UserNotFound() {

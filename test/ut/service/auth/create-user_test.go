@@ -117,5 +117,7 @@ func (c *CreateUserServiceSuite) TestAuthService_CreateUser_RepositoryError() {
 	c.Nil(status)
 	c.Equal(repoErr, err)
 	c.userRepository.AssertExpectations(c.T())
+
+	time.Sleep(time.Second)
 	c.eventEmitter.AssertNotCalled(c.T(), "InsertUser", mock.Anything, mock.Anything)
 }
