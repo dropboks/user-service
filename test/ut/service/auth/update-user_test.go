@@ -14,14 +14,14 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type UpdateUserServiceSuite struct {
+type UpdateUserAuthServiceSuite struct {
 	suite.Suite
 	authService    service.AuthService
 	userRepository *mocks.UserRepositoryMock
 	eventEmitter   *mocks.EmitterMock
 }
 
-func (u *UpdateUserServiceSuite) SetupSuite() {
+func (u *UpdateUserAuthServiceSuite) SetupSuite() {
 
 	mockUserRepo := new(mocks.UserRepositoryMock)
 	mockEventEmitter := new(mocks.EmitterMock)
@@ -31,7 +31,7 @@ func (u *UpdateUserServiceSuite) SetupSuite() {
 	u.authService = service.NewAuthService(mockUserRepo, mockEventEmitter, logger)
 }
 
-func (u *UpdateUserServiceSuite) SetupTest() {
+func (u *UpdateUserAuthServiceSuite) SetupTest() {
 	u.userRepository.ExpectedCalls = nil
 	u.eventEmitter.ExpectedCalls = nil
 
@@ -39,11 +39,11 @@ func (u *UpdateUserServiceSuite) SetupTest() {
 	u.eventEmitter.Calls = nil
 }
 
-func TestUpdateUserServiceSuite(t *testing.T) {
-	suite.Run(t, &UpdateUserServiceSuite{})
+func TestUpdateUserAuthServiceSuite(t *testing.T) {
+	suite.Run(t, &UpdateUserAuthServiceSuite{})
 }
 
-func (u *UpdateUserServiceSuite) TestAuthService_UpdateUser_Success() {
+func (u *UpdateUserAuthServiceSuite) TestAuthService_UpdateUser_Success() {
 	image := "img.png"
 	user := &upb.User{
 		Id:               "user-123",
@@ -62,7 +62,7 @@ func (u *UpdateUserServiceSuite) TestAuthService_UpdateUser_Success() {
 	u.userRepository.AssertExpectations(u.T())
 }
 
-func (u *UpdateUserServiceSuite) TestAuthService_UpdateUser_RepoError() {
+func (u *UpdateUserAuthServiceSuite) TestAuthService_UpdateUser_RepoError() {
 
 	image := "img.png"
 	user := &upb.User{
@@ -82,7 +82,7 @@ func (u *UpdateUserServiceSuite) TestAuthService_UpdateUser_RepoError() {
 	u.userRepository.AssertExpectations(u.T())
 }
 
-func (u *UpdateUserServiceSuite) TestAuthService_UpdateUser_EventEmitterCalled() {
+func (u *UpdateUserAuthServiceSuite) TestAuthService_UpdateUser_EventEmitterCalled() {
 	image := "img.png"
 
 	user := &upb.User{
