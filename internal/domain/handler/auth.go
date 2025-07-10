@@ -16,14 +16,14 @@ type AuthGrpcHandler struct {
 	upb.UnimplementedUserServiceServer
 }
 
-func newAuthGrpcHandler(authService service.AuthService) *AuthGrpcHandler {
+func NewAuthGrpcHandler(authService service.AuthService) *AuthGrpcHandler {
 	return &AuthGrpcHandler{
 		authService: authService,
 	}
 }
 
 func RegisterAuthService(grpc *grpc.Server, authService service.AuthService) {
-	grpcHandler := newAuthGrpcHandler(authService)
+	grpcHandler := NewAuthGrpcHandler(authService)
 	upb.RegisterUserServiceServer(grpc, grpcHandler)
 }
 
