@@ -14,7 +14,6 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
-	"github.com/spf13/viper"
 	"go.uber.org/dig"
 )
 
@@ -46,7 +45,6 @@ func (s *HTTPServer) Run(ctx context.Context) {
 				Addr:    s.Address,
 				Handler: router,
 			}
-			logger.Info().Msgf("HTTP Server Starting in port %s", s.Address)
 			go func() {
 				if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 					logger.Fatal().Err(err).Msg("Failed to listen and serve http server")
@@ -55,7 +53,7 @@ func (s *HTTPServer) Run(ctx context.Context) {
 
 			if s.ServerReady != nil {
 				for range 50 {
-					conn, err := net.DialTimeout("tcp", ":"+viper.GetString("app.http.port"), 100*time.Millisecond)
+					conn, err := net.DialTimeout("tcp", s.Address, 100*time.Millisecond)
 					if err == nil {
 						conn.Close()
 						s.ServerReady <- true
@@ -64,6 +62,7 @@ func (s *HTTPServer) Run(ctx context.Context) {
 					time.Sleep(100 * time.Millisecond)
 				}
 			}
+			logger.Info().Msgf("HTTP Server Starting in port %s", s.Address)
 
 			<-ctx.Done()
 			logger.Info().Msg("Shutting down server...")
