@@ -1,4 +1,4 @@
-package http_test
+package it
 
 import (
 	"bytes"
@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os/exec"
 	"testing"
 	"time"
 
@@ -22,7 +21,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 )
 
-type ChangeEmailITSuite struct {
+type HTTPChangeEmailITSuite struct {
 	suite.Suite
 	ctx context.Context
 
@@ -39,15 +38,13 @@ type ChangeEmailITSuite struct {
 	mailHogContainer             *_helper.MailhogContainer
 }
 
-func (c *ChangeEmailITSuite) SetupSuite() {
-	exec.Command("docker", "rm", "-f", "user_db").Run()
-	exec.Command("docker", "rm", "-f", "auth_db").Run()
-	log.Println("Setting up integration test suite for ChangeEmailITSuite")
+func (c *HTTPChangeEmailITSuite) SetupSuite() {
+	log.Println("Setting up integration test suite for HTTPChangeEmailITSuite")
 	c.ctx = context.Background()
 
 	viper.SetConfigName("config.test")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../../../")
+	viper.AddConfigPath("../../")
 	if err := viper.ReadInConfig(); err != nil {
 		panic("failed to read config")
 	}
@@ -124,7 +121,7 @@ func (c *ChangeEmailITSuite) SetupSuite() {
 	c.mailHogContainer = mailContainer
 }
 
-func (c *ChangeEmailITSuite) TearDownSuite() {
+func (c *HTTPChangeEmailITSuite) TearDownSuite() {
 	if err := c.userPgContainer.Terminate(c.ctx); err != nil {
 		log.Fatalf("error terminating user postgres container: %s", err)
 	}
@@ -155,13 +152,14 @@ func (c *ChangeEmailITSuite) TearDownSuite() {
 	if err := c.mailHogContainer.Terminate(c.ctx); err != nil {
 		log.Fatalf("error terminating mailhog container: %s", err)
 	}
-	log.Println("Tear Down integration test suite for ChangeEmailITSuite")
+	log.Println("Tear Down integration test suite for HTTPChangeEmailITSuite")
+
 }
-func TestChangeEmailITSuite(t *testing.T) {
-	suite.Run(t, &ChangeEmailITSuite{})
+func TestHTTPChangeEmailITSuite(t *testing.T) {
+	suite.Run(t, &HTTPChangeEmailITSuite{})
 }
 
-func (c *ChangeEmailITSuite) TestChangeEmailIT_Success() {
+func (c *HTTPChangeEmailITSuite) TestChangeEmailIT_Success() {
 	// register
 	email := fmt.Sprintf("test+%d@example.com", time.Now().UnixNano())
 	request := helper.Register(email, c.T())
@@ -257,7 +255,7 @@ func (c *ChangeEmailITSuite) TestChangeEmailIT_Success() {
 	c.Contains(string(byteBody), "verify to change email")
 }
 
-func (c *ChangeEmailITSuite) TestChangeEmailIT_MissingUserId() {
+func (c *HTTPChangeEmailITSuite) TestChangeEmailIT_MissingUserId() {
 
 	request, err := http.NewRequest(http.MethodPatch, "http://localhost:8082/email", nil)
 	c.NoError(err)
@@ -273,7 +271,7 @@ func (c *ChangeEmailITSuite) TestChangeEmailIT_MissingUserId() {
 	c.Contains(string(byteBody), dto.Err_UNAUTHORIZED_USER_ID_NOTFOUND.Error())
 }
 
-func (c *ChangeEmailITSuite) TestChangeEmailIT_MissingBody() {
+func (c *HTTPChangeEmailITSuite) TestChangeEmailIT_MissingBody() {
 
 	request, err := http.NewRequest(http.MethodPatch, "http://localhost:8082/email", nil)
 	c.NoError(err)

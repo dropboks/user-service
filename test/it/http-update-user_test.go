@@ -1,4 +1,4 @@
-package http_test
+package it
 
 import (
 	"bytes"
@@ -9,7 +9,6 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
-	"os/exec"
 	"testing"
 	"time"
 
@@ -22,7 +21,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 )
 
-type UpdateUserITSuite struct {
+type HTTPUpdateUserITSuite struct {
 	suite.Suite
 	ctx context.Context
 
@@ -39,15 +38,13 @@ type UpdateUserITSuite struct {
 	mailHogContainer             *_helper.MailhogContainer
 }
 
-func (u *UpdateUserITSuite) SetupSuite() {
-	exec.Command("docker", "rm", "-f", "user_db").Run()
-	exec.Command("docker", "rm", "-f", "auth_db").Run()
-	log.Println("Setting up integration test suite for UpdateUserITSuite")
+func (u *HTTPUpdateUserITSuite) SetupSuite() {
+	log.Println("Setting up integration test suite for HTTPUpdateUserITSuite")
 	u.ctx = context.Background()
 
 	viper.SetConfigName("config.test")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../../../")
+	viper.AddConfigPath("../../")
 	if err := viper.ReadInConfig(); err != nil {
 		panic("failed to read config")
 	}
@@ -124,7 +121,7 @@ func (u *UpdateUserITSuite) SetupSuite() {
 	u.mailHogContainer = mailContainer
 }
 
-func (u *UpdateUserITSuite) TearDownSuite() {
+func (u *HTTPUpdateUserITSuite) TearDownSuite() {
 	if err := u.userPgContainer.Terminate(u.ctx); err != nil {
 		log.Fatalf("error terminating user postgres container: %s", err)
 	}
@@ -155,13 +152,14 @@ func (u *UpdateUserITSuite) TearDownSuite() {
 	if err := u.mailHogContainer.Terminate(u.ctx); err != nil {
 		log.Fatalf("error terminating mailhog container: %s", err)
 	}
-	log.Println("Tear Down integration test suite for UpdateUserITSuite")
+
+	log.Println("Tear Down integration test suite for HTTPUpdateUserITSuite")
 }
-func TestUpdateUserITSuite(t *testing.T) {
-	suite.Run(t, &UpdateUserITSuite{})
+func TestHTTPUpdateUserITSuite(t *testing.T) {
+	suite.Run(t, &HTTPUpdateUserITSuite{})
 }
 
-func (u *UpdateUserITSuite) TestUpdateUserIT_Success() {
+func (u *HTTPUpdateUserITSuite) TestUpdateUserIT_Success() {
 	// register
 	email := fmt.Sprintf("test+%d@example.com", time.Now().UnixNano())
 	request := helper.Register(email, u.T())
@@ -258,7 +256,7 @@ func (u *UpdateUserITSuite) TestUpdateUserIT_Success() {
 	u.Contains(string(byteBody), "success update profile data")
 }
 
-func (u *UpdateUserITSuite) TestUpdateUserIT_MissingUserID() {
+func (u *HTTPUpdateUserITSuite) TestUpdateUserIT_MissingUserID() {
 
 	reqBody := &bytes.Buffer{}
 	formWriter := multipart.NewWriter(reqBody)
@@ -280,7 +278,7 @@ func (u *UpdateUserITSuite) TestUpdateUserIT_MissingUserID() {
 	u.Contains(string(byteBody), dto.Err_UNAUTHORIZED_USER_ID_NOTFOUND.Error())
 }
 
-func (u *UpdateUserITSuite) TestUpdateUserIT_MissingBody() {
+func (u *HTTPUpdateUserITSuite) TestUpdateUserIT_MissingBody() {
 
 	request, err := http.NewRequest(http.MethodPatch, "http://localhost:8082/", nil)
 
@@ -298,7 +296,7 @@ func (u *UpdateUserITSuite) TestUpdateUserIT_MissingBody() {
 	u.Contains(string(byteBody), "invalid input")
 }
 
-func (u *UpdateUserITSuite) TestUpdateUserIT_UserNotFound() {
+func (u *HTTPUpdateUserITSuite) TestUpdateUserIT_UserNotFound() {
 
 	reqBody := &bytes.Buffer{}
 	formWriter := multipart.NewWriter(reqBody)
@@ -322,7 +320,7 @@ func (u *UpdateUserITSuite) TestUpdateUserIT_UserNotFound() {
 	u.Contains(string(byteBody), dto.Err_NOTFOUND_USER_NOT_FOUND.Error())
 }
 
-func (u *UpdateUserITSuite) TestUpdateUserIT_ImageWrongExtension() {
+func (u *HTTPUpdateUserITSuite) TestUpdateUserIT_ImageWrongExtension() {
 	// register
 	email := fmt.Sprintf("test+%d@example.com", time.Now().UnixNano())
 	request := helper.Register(email, u.T())
@@ -425,7 +423,7 @@ func (u *UpdateUserITSuite) TestUpdateUserIT_ImageWrongExtension() {
 	u.Contains(string(byteBody), dto.Err_BAD_REQUEST_WRONG_EXTENSION.Error())
 }
 
-func (u *UpdateUserITSuite) TestUpdateUserIT_ImageLimitSizeExceeded() {
+func (u *HTTPUpdateUserITSuite) TestUpdateUserIT_ImageLimitSizeExceeded() {
 	// register
 	email := fmt.Sprintf("test+%d@example.com", time.Now().UnixNano())
 	request := helper.Register(email, u.T())

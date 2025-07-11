@@ -1,4 +1,4 @@
-package http_test
+package it
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os/exec"
 	"testing"
 	"time"
 
@@ -20,7 +19,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 )
 
-type GetProfileITSuite struct {
+type HTTPGetProfileITSuite struct {
 	suite.Suite
 	ctx context.Context
 
@@ -37,15 +36,14 @@ type GetProfileITSuite struct {
 	mailHogContainer             *_helper.MailhogContainer
 }
 
-func (g *GetProfileITSuite) SetupSuite() {
-	exec.Command("docker", "rm", "-f", "user_db").Run()
-	exec.Command("docker", "rm", "-f", "auth_db").Run()
-	log.Println("Setting up integration test suite for GetProfileITSuite")
+func (g *HTTPGetProfileITSuite) SetupSuite() {
+
+	log.Println("Setting up integration test suite for HTTPGetProfileITSuite")
 	g.ctx = context.Background()
 
 	viper.SetConfigName("config.test")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../../../")
+	viper.AddConfigPath("../../")
 	if err := viper.ReadInConfig(); err != nil {
 		panic("failed to read config")
 	}
@@ -122,7 +120,7 @@ func (g *GetProfileITSuite) SetupSuite() {
 	g.mailHogContainer = mailContainer
 }
 
-func (g *GetProfileITSuite) TearDownSuite() {
+func (g *HTTPGetProfileITSuite) TearDownSuite() {
 	if err := g.userPgContainer.Terminate(g.ctx); err != nil {
 		log.Fatalf("error terminating user postgres container: %s", err)
 	}
@@ -153,13 +151,15 @@ func (g *GetProfileITSuite) TearDownSuite() {
 	if err := g.mailHogContainer.Terminate(g.ctx); err != nil {
 		log.Fatalf("error terminating mailhog container: %s", err)
 	}
-	log.Println("Tear Down integration test suite for GetProfileITSuite")
+
+	log.Println("Tear Down integration test suite for HTTPGetProfileITSuite")
+
 }
-func TestGateProfileITSuite(t *testing.T) {
-	suite.Run(t, &GetProfileITSuite{})
+func TestHTTPGetProfileITSuite(t *testing.T) {
+	suite.Run(t, &HTTPGetProfileITSuite{})
 }
 
-func (g *GetProfileITSuite) TestGetProfileIT_Success() {
+func (g *HTTPGetProfileITSuite) TestGetProfileIT_Success() {
 	// register
 	email := fmt.Sprintf("test+%d@example.com", time.Now().UnixNano())
 	request := helper.Register(email, g.T())
@@ -248,7 +248,7 @@ func (g *GetProfileITSuite) TestGetProfileIT_Success() {
 	g.Contains(string(byteBody), "success get profile data")
 }
 
-func (g *GetProfileITSuite) TestGetProfileIT_MissingUserID() {
+func (g *HTTPGetProfileITSuite) TestGetProfileIT_MissingUserID() {
 	// get profile
 	request, err := http.NewRequest(http.MethodGet, "http://localhost:8082/me", nil)
 	g.NoError(err)
@@ -264,7 +264,7 @@ func (g *GetProfileITSuite) TestGetProfileIT_MissingUserID() {
 	g.Contains(string(byteBody), dto.Err_UNAUTHORIZED_USER_ID_NOTFOUND.Error())
 }
 
-func (g *GetProfileITSuite) TestGetProfileIT_UserNotFound() {
+func (g *HTTPGetProfileITSuite) TestGetProfileIT_UserNotFound() {
 	// get profile
 	request, err := http.NewRequest(http.MethodGet, "http://localhost:8082/me", nil)
 	g.NoError(err)

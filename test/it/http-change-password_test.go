@@ -1,4 +1,4 @@
-package http_test
+package it
 
 import (
 	"bytes"
@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os/exec"
 	"testing"
 	"time"
 
@@ -22,7 +21,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 )
 
-type ChangePasswordITSuite struct {
+type HTTPChangePasswordITSuite struct {
 	suite.Suite
 	ctx context.Context
 
@@ -39,15 +38,14 @@ type ChangePasswordITSuite struct {
 	mailHogContainer             *_helper.MailhogContainer
 }
 
-func (c *ChangePasswordITSuite) SetupSuite() {
-	exec.Command("docker", "rm", "-f", "user_db").Run()
-	exec.Command("docker", "rm", "-f", "auth_db").Run()
-	log.Println("Setting up integration test suite for ChangePasswordITSuite")
+func (c *HTTPChangePasswordITSuite) SetupSuite() {
+
+	log.Println("Setting up integration test suite for HTTPChangePasswordITSuite")
 	c.ctx = context.Background()
 
 	viper.SetConfigName("config.test")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../../../")
+	viper.AddConfigPath("../../")
 	if err := viper.ReadInConfig(); err != nil {
 		panic("failed to read config")
 	}
@@ -124,7 +122,7 @@ func (c *ChangePasswordITSuite) SetupSuite() {
 	c.mailHogContainer = mailContainer
 }
 
-func (c *ChangePasswordITSuite) TearDownSuite() {
+func (c *HTTPChangePasswordITSuite) TearDownSuite() {
 	if err := c.userPgContainer.Terminate(c.ctx); err != nil {
 		log.Fatalf("error terminating user postgres container: %s", err)
 	}
@@ -155,13 +153,15 @@ func (c *ChangePasswordITSuite) TearDownSuite() {
 	if err := c.mailHogContainer.Terminate(c.ctx); err != nil {
 		log.Fatalf("error terminating mailhog container: %s", err)
 	}
-	log.Println("Tear Down integration test suite for ChangePasswordITSuite")
+
+	log.Println("Tear Down integration test suite for HTTPChangePasswordITSuite")
+
 }
-func TestChangePasswordITSuite(t *testing.T) {
-	suite.Run(t, &ChangePasswordITSuite{})
+func TestHTTPChangePasswordITSuite(t *testing.T) {
+	suite.Run(t, &HTTPChangePasswordITSuite{})
 }
 
-func (c *ChangePasswordITSuite) TestChangePasswordIT_Success() {
+func (c *HTTPChangePasswordITSuite) TestChangePasswordIT_Success() {
 	// register
 	email := fmt.Sprintf("test+%d@example.com", time.Now().UnixNano())
 	request := helper.Register(email, c.T())
@@ -259,7 +259,7 @@ func (c *ChangePasswordITSuite) TestChangePasswordIT_Success() {
 	c.Contains(string(byteBody), dto.SUCCESS_UPDATE_PASSWORD)
 }
 
-func (c *ChangePasswordITSuite) TestChangePasswordIT_MissingUserId() {
+func (c *HTTPChangePasswordITSuite) TestChangePasswordIT_MissingUserId() {
 	request, err := http.NewRequest(http.MethodPatch, "http://localhost:8082/password", nil)
 	c.NoError(err)
 
@@ -273,7 +273,7 @@ func (c *ChangePasswordITSuite) TestChangePasswordIT_MissingUserId() {
 	c.NoError(err)
 	c.Contains(string(byteBody), dto.Err_UNAUTHORIZED_USER_ID_NOTFOUND.Error())
 }
-func (c *ChangePasswordITSuite) TestChangePasswordIT_MissingBody() {
+func (c *HTTPChangePasswordITSuite) TestChangePasswordIT_MissingBody() {
 	reqBody := &bytes.Buffer{}
 
 	encoder := gin.H{}
@@ -293,7 +293,7 @@ func (c *ChangePasswordITSuite) TestChangePasswordIT_MissingBody() {
 	c.NoError(err)
 	c.Contains(string(byteBody), "invalid input")
 }
-func (c *ChangePasswordITSuite) TestChangePasswordIT_PasswordAndConfirmPasswordNotMatch() {
+func (c *HTTPChangePasswordITSuite) TestChangePasswordIT_PasswordAndConfirmPasswordNotMatch() {
 	reqBody := &bytes.Buffer{}
 
 	encoder := gin.H{
@@ -317,7 +317,7 @@ func (c *ChangePasswordITSuite) TestChangePasswordIT_PasswordAndConfirmPasswordN
 	c.NoError(err)
 	c.Contains(string(byteBody), dto.Err_BAD_REQUEST_PASSWORD_CONFIRM_PASSWORD_DOESNT_MATCH.Error())
 }
-func (c *ChangePasswordITSuite) TestChangePasswordIT_UserNotFound() {
+func (c *HTTPChangePasswordITSuite) TestChangePasswordIT_UserNotFound() {
 	reqBody := &bytes.Buffer{}
 
 	encoder := gin.H{
@@ -341,7 +341,7 @@ func (c *ChangePasswordITSuite) TestChangePasswordIT_UserNotFound() {
 	c.NoError(err)
 	c.Contains(string(byteBody), dto.Err_NOTFOUND_USER_NOT_FOUND.Error())
 }
-func (c *ChangePasswordITSuite) TestChangePasswordIT_WrongPassword() {
+func (c *HTTPChangePasswordITSuite) TestChangePasswordIT_WrongPassword() {
 	// register
 	email := fmt.Sprintf("test+%d@example.com", time.Now().UnixNano())
 	request := helper.Register(email, c.T())
