@@ -79,5 +79,5 @@ container:
 
 
 script:
-  nats_server: "../../mocks/nats/nats-server.conf"
-  init_sql: "../../mocks/db/init-db.sql"
+  nats_server: "../mocks/nats/nats-server.conf"
+  init_sql: "../mocks/db/init-db.sql"
