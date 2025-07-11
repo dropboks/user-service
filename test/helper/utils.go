@@ -8,6 +8,7 @@ import (
 	"mime/multipart"
 	"mime/quotedprintable"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"testing"
@@ -15,7 +16,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
+
+func ConnectGRPC(grpcURL string) (*grpc.ClientConn, error) {
+	u, err := url.Parse(grpcURL)
+	if err != nil {
+		return nil, err
+	}
+	return grpc.NewClient(u.String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+}
 
 func Login(email string, t *testing.T) *http.Request {
 	reqBody := &bytes.Buffer{}
